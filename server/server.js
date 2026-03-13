@@ -6,6 +6,7 @@ import connectDB from "./src/config/db.js";
 import authRoutes from "./src/routes/auth.routes.js";
 import userRoutes from "./src/routes/user.routes.js";
 import rideRoutes from "./src/routes/ride.routes.js"
+import bookingRoutes from "./src/routes/booking.routes.js"
 
 dotenv.config();
 connectDB();
@@ -25,6 +26,7 @@ app.use(
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/rides", rideRoutes);
+app.use("/api/bookings", bookingRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "RideShare API running" });
