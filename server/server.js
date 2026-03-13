@@ -10,6 +10,7 @@ import userRoutes from "./src/routes/user.routes.js";
 import rideRoutes from "./src/routes/ride.routes.js";
 import bookingRoutes from "./src/routes/booking.routes.js";
 import smartRoutes from "./src/routes/smart.routes.js";
+import adminRoutes from "./src/routes/admin.routes.js";
 import initSocket from "./src/socket/socket.js";
 
 dotenv.config();
@@ -38,6 +39,7 @@ app.use("/api/user", userRoutes);
 app.use("/api/rides", rideRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/smart", smartRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "RideShare API running" });
