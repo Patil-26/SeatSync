@@ -35,7 +35,7 @@ app.use(cookieParser());
 app.use(cors({
   origin: [
     "http://localhost:5173",
-    "https://seat-sync.vercel.app"  // Add your Vercel URL
+    "https://megahack-2026-game-of-codes.vercel.app"  // Add your Vercel URL
   ],
   credentials: true
 }));
