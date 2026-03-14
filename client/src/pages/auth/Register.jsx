@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useAuthStore from "../../store/useAuthStore.js";
 import useToastStore from "../../store/useToastStore.js";
+import { KeyIllustration } from "../../components/shared/FlatIllustrations.jsx";
 
 const Register = () => {
   const { register, loading, error, clearError } = useAuthStore();
@@ -29,7 +30,8 @@ const Register = () => {
             <Link to="/" className="text-2xl font-black tracking-tighter">
               SEAT<span style={{ background: "#ffe156", padding: "0 4px", border: "2px solid #1a1a1a" }}>SYNC</span>
             </Link>
-            <h1 className="text-3xl font-black mt-6">CREATE ACCOUNT</h1>
+            <div className="flex justify-center mt-5 mb-2"><KeyIllustration size={52} /></div>
+            <h1 className="text-3xl font-black">CREATE ACCOUNT</h1>
             <p className="text-gray-500 mt-1 text-sm">Join the ride-sharing revolution</p>
           </div>
 

@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import Navbar from "../../components/layout/Navbar.jsx";
 import RideCard from "../../components/shared/RideCard.jsx";
 import Spinner from "../../components/shared/Spinner.jsx";
+import { SearchIllustration } from "../../components/shared/FlatIllustrations.jsx";
 import useRideStore from "../../store/useRideStore.js";
 
 const SearchRides = () => {
@@ -43,7 +44,7 @@ const SearchRides = () => {
           <div className="py-20"><Spinner size="lg" /></div>
         ) : rides.length === 0 ? (
           <div className="card text-center py-16 animate-fade-up">
-            <p className="text-5xl font-black mb-2" style={{ opacity: 0.08 }}>404</p>
+            <div className="flex justify-center mb-4"><SearchIllustration size={80} /></div>
             <p className="font-black text-lg">NO RIDES FOUND</p>
             <p className="text-sm text-gray-500 mt-1">Try changing your search filters or check back later</p>
           </div>

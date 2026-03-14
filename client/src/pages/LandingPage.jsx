@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import Navbar from "../components/layout/Navbar.jsx";
 import LiveTrackingDemo from "../components/shared/LiveTrackingDemo.jsx";
+import { CarIllustration, SearchIllustration, BookIllustration, TravelIllustration, HeroScene, PersonGirl, PersonGuy, PersonWaving } from "../components/shared/FlatIllustrations.jsx";
 import useAuthStore from "../store/useAuthStore.js";
 
 const LandingPage = () => {
@@ -65,14 +66,8 @@ const LandingPage = () => {
               </div>
             </div>
 
-            <div className="animate-fade-up-delay">
-              <div className="card-yellow p-8" style={{ transform: "rotate(2deg)" }}>
-                <p className="text-5xl font-black mb-2">45+</p>
-                <p className="font-bold uppercase tracking-wider text-sm">Tons of CO2 saved</p>
-                <div className="mt-4 border-t-3 border-black pt-4" style={{ borderTop: "3px solid #1a1a1a" }}>
-                  <p className="text-sm font-medium">That's like planting 2,250 trees. Every shared ride counts.</p>
-                </div>
-              </div>
+            <div className="animate-fade-up-delay flex items-center justify-center">
+              <HeroScene width={420} />
             </div>
           </div>
         </div>
@@ -122,13 +117,13 @@ const LandingPage = () => {
           <h2 className="text-4xl font-black mb-10 animate-fade-up">HOW IT WORKS</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              { n: "01", title: "SEARCH", desc: "Enter where you're going and when. We'll find all available rides on that route.", color: "card-blue" },
-              { n: "02", title: "BOOK", desc: "Pick a ride, check the driver's rating, and request your seats. Pay with cash or digital.", color: "card-green" },
-              { n: "03", title: "TRAVEL", desc: "Meet your driver at the pickup point. Track the ride live and reach your destination.", color: "card-pink" },
+              { n: "01", title: "SEARCH", desc: "Enter where you're going and when. We'll find all available rides on that route.", color: "card-blue", icon: <SearchIllustration size={56} /> },
+              { n: "02", title: "BOOK", desc: "Pick a ride, check the driver's rating, and request your seats. Pay with cash or digital.", color: "card-green", icon: <BookIllustration size={56} /> },
+              { n: "03", title: "TRAVEL", desc: "Meet your driver at the pickup point. Track the ride live and reach your destination.", color: "card-pink", icon: <TravelIllustration size={56} /> },
             ].map((step, i) => (
               <div key={step.n} className={`${step.color} p-6 animate-fade-up`}
                 style={{ animationDelay: `${i * 0.12}s`, border: "3px solid #1a1a1a", boxShadow: "6px 6px 0 #1a1a1a" }}>
-                <p className="text-6xl font-black mb-2" style={{ opacity: 0.15 }}>{step.n}</p>
+                <div className="mb-3">{step.icon}</div>
                 <h3 className="text-xl font-black mb-2">{step.title}</h3>
                 <p className="text-sm leading-relaxed">{step.desc}</p>
               </div>
@@ -182,20 +177,23 @@ const LandingPage = () => {
           <h2 className="text-4xl font-black mb-10 animate-fade-up">WHAT RIDERS SAY</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {[
-              { name: "Priya Sharma", city: "Mumbai", text: "I save over 3000 rupees a month commuting to Pune. The drivers are verified and the app is super simple.", stars: 5 },
-              { name: "Rahul Verma", city: "Delhi", text: "As a driver, I cover my fuel costs completely. Met some great people on the way. Win-win situation honestly.", stars: 5 },
-              { name: "Ananya Patel", city: "Bangalore", text: "The live tracking feature gives my parents peace of mind. I travel solo and always feel safe with SeatSync.", stars: 4 },
+              { name: "Priya Sharma", city: "Mumbai", text: "I save over 3000 rupees a month commuting to Pune. The drivers are verified and the app is super simple.", stars: 5, color: "#ff8fab" },
+              { name: "Rahul Verma", city: "Delhi", text: "As a driver, I cover my fuel costs completely. Met some great people on the way. Win-win situation honestly.", stars: 5, color: "#ffe156" },
+              { name: "Ananya Patel", city: "Bangalore", text: "The live tracking feature gives my parents peace of mind. I travel solo and always feel safe with SeatSync.", stars: 4, color: "#b8f3b0" },
             ].map((t, i) => (
               <div key={t.name} className="card p-6 animate-fade-up" style={{ animationDelay: `${i * 0.1}s` }}>
-                <p className="text-sm leading-relaxed mb-4">"{t.text}"</p>
-                <div className="border-t-2 border-black pt-3 flex items-center justify-between">
+                <div className="flex items-center gap-3 mb-4">
+                  <div style={{ width: 40, height: 40, background: t.color, border: "2px solid #1a1a1a", boxShadow: "2px 2px 0 #1a1a1a", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <span className="font-black text-sm">{t.name.charAt(0)}</span>
+                  </div>
                   <div>
                     <p className="font-black text-sm">{t.name}</p>
                     <p className="text-xs text-gray-500 uppercase tracking-wider">{t.city}</p>
                   </div>
-                  <div className="flex gap-0.5 text-sm">
-                    {Array(t.stars).fill(null).map((_,j) => <span key={j} className="font-black">*</span>)}
-                  </div>
+                </div>
+                <p className="text-sm leading-relaxed mb-3">"{t.text}"</p>
+                <div className="flex gap-1">
+                  {Array(t.stars).fill(null).map((_,j) => <span key={j} style={{ color: "#ffe156", textShadow: "0 0 0 #1a1a1a", fontSize: 18 }}>★</span>)}
                 </div>
               </div>
             ))}
@@ -224,15 +222,23 @@ const LandingPage = () => {
 
       {/* ═══ CTA ═══ */}
       <section className="py-16 px-6">
-        <div className="max-w-2xl mx-auto">
-          <div className="card-yellow p-10 text-center animate-fade-up" style={{ border: "3px solid #1a1a1a", boxShadow: "8px 8px 0 #1a1a1a" }}>
-            <h2 className="text-4xl font-black mb-3">READY?</h2>
-            <p className="text-lg mb-8 max-w-md mx-auto">
-              Join thousands of smart travelers who save money and reduce emissions every single day.
-            </p>
-            <button onClick={() => navigate("/register")} className="btn-primary" style={{ background: "#1a1a1a", color: "#ffe156" }}>
-              Get Started Free
-            </button>
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-end justify-center gap-6 flex-wrap">
+            <div className="hidden md:block animate-fade-up" style={{ marginBottom: -3 }}>
+              <PersonGirl size={100} />
+            </div>
+            <div className="card-yellow p-10 text-center animate-fade-up flex-1 max-w-lg" style={{ border: "3px solid #1a1a1a", boxShadow: "8px 8px 0 #1a1a1a" }}>
+              <h2 className="text-4xl font-black mb-3">READY?</h2>
+              <p className="text-lg mb-8 max-w-md mx-auto">
+                Join thousands of smart travelers who save money and reduce emissions every single day.
+              </p>
+              <button onClick={() => navigate("/register")} className="btn-primary" style={{ background: "#1a1a1a", color: "#ffe156" }}>
+                Get Started Free
+              </button>
+            </div>
+            <div className="hidden md:block animate-fade-up-delay" style={{ marginBottom: -3 }}>
+              <PersonWaving size={100} />
+            </div>
           </div>
         </div>
       </section>
