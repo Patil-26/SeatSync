@@ -87,7 +87,7 @@ const PostRide = () => {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Source */}
-          <div className="card animate-fade-up">
+          <div className="card animate-fade-up" style={{ overflow: "visible", position:"relative", zIndex:20}}>
             <h2
               className="font-black uppercase tracking-wider text-sm mb-4"
               style={{ borderBottom: "2px solid #1a1a1a", paddingBottom: "8px" }}
@@ -102,7 +102,7 @@ const PostRide = () => {
           </div>
 
           {/* Destination */}
-          <div className="card animate-fade-up-delay">
+          <div className="card animate-fade-up-delay" style={{ overflow: "visible", position: "relative", zIndex: 10 }}>
             <h2
               className="font-black uppercase tracking-wider text-sm mb-4"
               style={{ borderBottom: "2px solid #1a1a1a", paddingBottom: "8px" }}

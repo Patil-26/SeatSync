@@ -70,7 +70,7 @@ const LocationAutocomplete = ({ label, placeholder, onSelect, defaultValue = "" 
       />
       {open && (loading || results.length > 0) && (
         <div
-          className="absolute z-50 w-full mt-1 bg-white border-2 border-black rounded"
+          className="absolute z-[999] w-full mt-1 bg-white border-2 border-black rounded"
           style={{ boxShadow: "3px 3px 0 #1a1a1a" }}
         >
           {loading && (
