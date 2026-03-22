@@ -84,12 +84,15 @@ export const createRide = async (req, res) => {
 
 // @GET /api/rides/search
 // passenger searches for rides
-// query params: sourceName, destinationName, date, seats, minPrice, maxPrice
 export const searchRides = async (req, res) => {
   try {
     const {
       sourceName,
       destinationName,
+      sourceLat,
+      sourceLng,
+      destinationLat,
+      destinationLng,
       date,
       seats,
       minPrice,
@@ -100,15 +103,12 @@ export const searchRides = async (req, res) => {
 
     const filter = { status: "scheduled" };
 
-    if (sourceName) {
+    // fallback name search if no coordinates
+    if (sourceName && !sourceLat) {
       filter["source.name"] = { $regex: sourceName, $options: "i" };
     }
-
-    if (destinationName) {
-      filter["destination.name"] = {
-        $regex: destinationName,
-        $options: "i",
-      };
+    if (destinationName && !destinationLat) {
+      filter["destination.name"] = { $regex: destinationName, $options: "i" };
     }
 
     if (date) {
@@ -118,13 +118,10 @@ export const searchRides = async (req, res) => {
       endOfDay.setHours(23, 59, 59, 999);
       filter.departureTime = { $gte: startOfDay, $lte: endOfDay };
     } else {
-      // default: only show future rides
       filter.departureTime = { $gte: new Date() };
     }
 
-    if (seats) {
-      filter.availableSeats = { $gte: parseInt(seats) };
-    }
+    if (seats) filter.availableSeats = { $gte: parseInt(seats) };
 
     if (minPrice || maxPrice) {
       filter.pricePerSeat = {};
@@ -134,19 +131,36 @@ export const searchRides = async (req, res) => {
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
-    const rides = await Ride.find(filter)
+    let rides = await Ride.find(filter)
       .populate("driver", "name avatar averageRating totalRidesAsDriver trustScore")
       .sort({ departureTime: 1 })
       .skip(skip)
       .limit(parseInt(limit));
 
-    const total = await Ride.countDocuments(filter);
+    // coordinate-based filtering using routeMatching
+    if (sourceLat && sourceLng && destinationLat && destinationLng) {
+      const { isRouteMatch } = await import("../utils/routeMatching.js");
+      rides = rides.filter((ride) => {
+        const [rideSrcLng, rideSrcLat] =
+          ride.source.coordinates.coordinates;
+        const [rideDestLng, rideDestLat] =
+          ride.destination.coordinates.coordinates;
+        const { isMatch } = isRouteMatch(
+          parseFloat(sourceLat), parseFloat(sourceLng),
+          parseFloat(destinationLat), parseFloat(destinationLng),
+          rideSrcLat, rideSrcLng,
+          rideDestLat, rideDestLng,
+          30 // 30km radius
+        );
+        return isMatch;
+      });
+    }
 
     res.status(200).json({
       success: true,
-      total,
+      total: rides.length,
       page: parseInt(page),
-      pages: Math.ceil(total / parseInt(limit)),
+      pages: Math.ceil(rides.length / parseInt(limit)),
       rides,
     });
   } catch (error) {
