@@ -7,6 +7,7 @@ import Spinner from "../../components/shared/Spinner.jsx";
 import useRideStore from "../../store/useRideStore.js";
 import useAuthStore from "../../store/useAuthStore.js";
 import useToastStore from "../../store/useToastStore.js";
+import { getSocket } from "../../socket/socket.js";
 import api from "../../api/axios.js";
 
 const makeIcon = (bg, label) => new L.DivIcon({
@@ -22,7 +23,7 @@ const FitBounds = ({ points }) => {
 
 // Payment Modal
 const PaymentModal = ({ order, onClose, onSuccess }) => {
-  const [step, setStep] = useState("method"); // method | processing | success
+  const [step, setStep] = useState("method");
   const [method, setMethod] = useState("upi");
   const [upiId, setUpiId] = useState("");
   const { addToast } = useToastStore();
@@ -33,13 +34,9 @@ const PaymentModal = ({ order, onClose, onSuccess }) => {
       return;
     }
     setStep("processing");
-    // simulate payment processing delay
     await new Promise((r) => setTimeout(r, 2000));
     try {
-      await api.post("/payments/verify", {
-        bookingId: order.bookingId,
-        paymentMethod: "online",
-      });
+      await api.post("/payments/verify", { bookingId: order.bookingId, paymentMethod: "online" });
       setStep("success");
       setTimeout(() => { onSuccess(); onClose(); }, 1500);
     } catch (err) {
@@ -51,8 +48,6 @@ const PaymentModal = ({ order, onClose, onSuccess }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.6)" }}>
       <div className="w-full max-w-sm mx-4 bg-white" style={{ border: "3px solid #1a1a1a", boxShadow: "6px 6px 0 #1a1a1a" }}>
-
-        {/* Header */}
         <div className="px-6 py-4 flex justify-between items-center" style={{ borderBottom: "2px solid #1a1a1a", background: "#ffe156" }}>
           <div>
             <p className="font-black uppercase tracking-wider text-sm">Complete Payment</p>
@@ -60,17 +55,13 @@ const PaymentModal = ({ order, onClose, onSuccess }) => {
           </div>
           <button onClick={onClose} className="font-black text-xl leading-none">×</button>
         </div>
-
         <div className="px-6 py-5">
           {step === "method" && (
             <>
-              {/* Amount */}
               <div className="text-center mb-5 py-3" style={{ border: "2px solid #1a1a1a", background: "#fffef5" }}>
                 <p className="text-3xl font-black">₹{order.amount / 100}</p>
                 <p className="text-xs text-gray-500 uppercase tracking-wider mt-1">Total Amount</p>
               </div>
-
-              {/* Payment methods */}
               <p className="text-xs font-black uppercase tracking-wider mb-3">Select Payment Method</p>
               <div className="space-y-2 mb-4">
                 {[
@@ -80,45 +71,30 @@ const PaymentModal = ({ order, onClose, onSuccess }) => {
                 ].map((m) => (
                   <div key={m.id} onClick={() => setMethod(m.id)}
                     className="flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors"
-                    style={{
-                      border: `2px solid ${method === m.id ? "#1a1a1a" : "#ddd"}`,
-                      background: method === m.id ? "#fffbea" : "#fff",
-                      boxShadow: method === m.id ? "3px 3px 0 #1a1a1a" : "none",
-                    }}>
+                    style={{ border: `2px solid ${method === m.id ? "#1a1a1a" : "#ddd"}`, background: method === m.id ? "#fffbea" : "#fff", boxShadow: method === m.id ? "3px 3px 0 #1a1a1a" : "none" }}>
                     <span style={{ fontSize: "20px" }}>{m.icon}</span>
                     <span className="font-bold text-sm">{m.label}</span>
                     {method === m.id && <span className="ml-auto font-black text-green-600">✓</span>}
                   </div>
                 ))}
               </div>
-
-              {/* UPI ID input */}
               {method === "upi" && (
                 <div className="mb-4">
                   <label className="block text-xs font-black uppercase tracking-wider mb-1">UPI ID</label>
-                  <input
-                    type="text"
-                    value={upiId}
-                    onChange={(e) => setUpiId(e.target.value)}
-                    placeholder="yourname@upi"
-                    className="input-field w-full"
-                  />
+                  <input type="text" value={upiId} onChange={(e) => setUpiId(e.target.value)} placeholder="yourname@upi" className="input-field w-full" />
                   <p className="text-xs text-gray-400 mt-1">Works with GPay, PhonePe, Paytm, BHIM</p>
                 </div>
               )}
-
               {(method === "card" || method === "netbanking") && (
                 <div className="mb-4 px-4 py-3 text-sm text-gray-500 text-center" style={{ border: "1px dashed #ccc" }}>
                   Redirects to secure payment page
                 </div>
               )}
-
               <button onClick={handlePay} className="btn-primary w-full" style={{ background: "#1a1a1a", color: "#ffe156" }}>
                 Pay ₹{order.amount / 100}
               </button>
             </>
           )}
-
           {step === "processing" && (
             <div className="text-center py-8">
               <div className="w-12 h-12 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -126,16 +102,89 @@ const PaymentModal = ({ order, onClose, onSuccess }) => {
               <p className="text-sm text-gray-500 mt-1">Please wait...</p>
             </div>
           )}
-
           {step === "success" && (
             <div className="text-center py-8">
-              <div className="w-14 h-14 flex items-center justify-center mx-auto mb-4 text-3xl"
-                style={{ background: "#b8f3b0", border: "3px solid #1a1a1a", boxShadow: "3px 3px 0 #1a1a1a" }}>
-                ✓
-              </div>
+              <div className="w-14 h-14 flex items-center justify-center mx-auto mb-4 text-3xl" style={{ background: "#b8f3b0", border: "3px solid #1a1a1a", boxShadow: "3px 3px 0 #1a1a1a" }}>✓</div>
               <p className="font-black uppercase tracking-wider">Payment Successful!</p>
               <p className="text-sm text-gray-500 mt-1">Your booking is confirmed</p>
             </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// SOS Modal
+const SOSModal = ({ rideId, onClose }) => {
+  const [triggered, setTriggered] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const { addToast } = useToastStore();
+
+  const handleSOS = () => {
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const socket = getSocket();
+        if (socket) {
+          socket.emit("sos:trigger", {
+            rideId,
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+          });
+        }
+        setLocating(false);
+        setTriggered(true);
+        addToast("SOS alert sent! Help is on the way.", "error");
+      },
+      () => {
+        // if location denied, still send SOS without coords
+        const socket = getSocket();
+        if (socket) {
+          socket.emit("sos:trigger", { rideId, latitude: null, longitude: null });
+        }
+        setLocating(false);
+        setTriggered(true);
+        addToast("SOS alert sent!", "error");
+      }
+    );
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.75)" }}>
+      <div className="w-full max-w-sm mx-4 bg-white" style={{ border: "3px solid #ff0000", boxShadow: "6px 6px 0 #ff0000" }}>
+        <div className="px-6 py-4 flex justify-between items-center" style={{ borderBottom: "2px solid #ff0000", background: "#ff6b6b" }}>
+          <p className="font-black uppercase tracking-wider text-white text-sm">🚨 Emergency SOS</p>
+          <button onClick={onClose} className="font-black text-xl leading-none text-white">×</button>
+        </div>
+        <div className="px-6 py-6 text-center">
+          {!triggered ? (
+            <>
+              <p className="font-black text-lg mb-2">Are you in danger?</p>
+              <p className="text-sm text-gray-500 mb-6">This will alert the driver, all passengers, and the SeatSync admin team with your location.</p>
+              <button
+                onClick={handleSOS}
+                disabled={locating}
+                className="w-full py-4 font-black text-white text-lg uppercase tracking-wider mb-3"
+                style={{ background: "#ff0000", border: "3px solid #1a1a1a", boxShadow: "4px 4px 0 #1a1a1a" }}
+              >
+                {locating ? "Getting Location..." : "🚨 SEND SOS ALERT"}
+              </button>
+              <button onClick={onClose} className="text-sm font-bold text-gray-400 hover:text-gray-600">
+                Cancel — I'm safe
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="w-16 h-16 flex items-center justify-center mx-auto mb-4 text-3xl"
+                style={{ background: "#ff6b6b", border: "3px solid #1a1a1a", boxShadow: "3px 3px 0 #1a1a1a" }}>
+                🚨
+              </div>
+              <p className="font-black text-lg mb-2">SOS Alert Sent!</p>
+              <p className="text-sm text-gray-500 mb-4">Help is on the way. Stay calm and stay on the line.</p>
+              <p className="text-xs font-bold text-gray-400">Emergency: 112 · Women Helpline: 1091</p>
+              <button onClick={onClose} className="mt-4 text-sm font-bold text-gray-400 hover:text-gray-600">Close</button>
+            </>
           )}
         </div>
       </div>
@@ -153,22 +202,23 @@ const RideDetails = () => {
   const [booking, setBooking] = useState(false);
   const [paymentOrder, setPaymentOrder] = useState(null);
   const [booked, setBooked] = useState(false);
+  const [showSOS, setShowSOS] = useState(false);
 
   useEffect(() => { getRideById(id); }, [id]);
+
+  // join ride socket room
+  useEffect(() => {
+    const socket = getSocket();
+    if (socket && id) socket.emit("ride:join", { rideId: id });
+    return () => { if (socket && id) socket.emit("ride:leave", { rideId: id }); };
+  }, [id]);
 
   const handleBook = async () => {
     if (!user) return navigate("/login");
     setBooking(true);
     try {
-      // step 1 — create booking
-      const bookingRes = await api.post("/bookings/create", {
-        rideId: id,
-        seatsBooked: seats,
-        paymentMethod: "online",
-      });
+      const bookingRes = await api.post("/bookings/create", { rideId: id, seatsBooked: seats, paymentMethod: "online" });
       const bookingId = bookingRes.data.booking._id;
-
-      // step 2 — create payment order
       const orderRes = await api.post("/payments/create-order", { bookingId });
       setPaymentOrder(orderRes.data);
     } catch (err) {
@@ -192,23 +242,35 @@ const RideDetails = () => {
   const destCoords = ride.destination?.coordinates?.coordinates;
   const hasMap = srcCoords && destCoords && srcCoords.length === 2 && destCoords.length === 2;
   const mapPoints = hasMap ? [[srcCoords[1], srcCoords[0]], [destCoords[1], destCoords[0]]] : [];
+  const isOngoing = ride.status === "ongoing";
 
   return (
     <div className="min-h-screen" style={{ background: "#fffef5" }}>
       <Navbar />
 
       {paymentOrder && (
-        <PaymentModal
-          order={paymentOrder}
-          onClose={() => setPaymentOrder(null)}
-          onSuccess={handlePaymentSuccess}
-        />
+        <PaymentModal order={paymentOrder} onClose={() => setPaymentOrder(null)} onSuccess={handlePaymentSuccess} />
+      )}
+      {showSOS && (
+        <SOSModal rideId={id} onClose={() => setShowSOS(false)} />
       )}
 
       <div className="max-w-3xl mx-auto px-6 py-10">
-        <button onClick={() => navigate(-1)} className="text-sm font-bold uppercase tracking-wider mb-6 block cursor-pointer hover:underline">
-          &larr; Back
-        </button>
+        <div className="flex justify-between items-center mb-6">
+          <button onClick={() => navigate(-1)} className="text-sm font-bold uppercase tracking-wider cursor-pointer hover:underline">
+            &larr; Back
+          </button>
+          {/* SOS button — only visible during ongoing ride */}
+          {user && isOngoing && (
+            <button
+              onClick={() => setShowSOS(true)}
+              className="font-black text-sm uppercase tracking-wider px-4 py-2 text-white animate-pulse"
+              style={{ background: "#ff0000", border: "2px solid #1a1a1a", boxShadow: "3px 3px 0 #1a1a1a" }}
+            >
+              🚨 SOS
+            </button>
+          )}
+        </div>
 
         {hasMap && (
           <div className="mb-5 animate-fade-up" style={{ border: "3px solid #1a1a1a", boxShadow: "6px 6px 0 #1a1a1a" }}>
