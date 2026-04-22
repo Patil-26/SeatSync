@@ -1,23 +1,23 @@
 import express from "express";
 import {
-    getDashboardStats,
-    getAllUsers,
-    deactivateUser,
-    activateUser,
-    verifyDriver,
-    getAllRides,
-    getPopularRoutes,
-    getDemandPattern,
-    getGrowthAnalytics,
-    getSuspiciousUsers,
-    adjustTrustScore,
+  getDashboardStats,
+  getAllUsers,
+  deactivateUser,
+  activateUser,
+  verifyDriver,
+  getAllRides,
+  getPopularRoutes,
+  getDemandPattern,
+  getGrowthAnalytics,
+  getSuspiciousUsers,
+  adjustTrustScore,
+  getDriversWithStatus,
 } from "../controllers/admin.controller.js";
 import { protect } from "../middleware/auth.middleware.js";
 import { restrictTo } from "../middleware/role.middleware.js";
 
 const router = express.Router();
 
-// all admin routes require login + admin role
 router.use(protect);
 router.use(restrictTo("admin"));
 
@@ -31,6 +31,7 @@ router.put("/users/:id/activate", activateUser);
 router.put("/users/:id/trust-score", adjustTrustScore);
 
 // driver verification
+router.get("/drivers", getDriversWithStatus);
 router.put("/drivers/:id/verify", verifyDriver);
 
 // ride monitoring

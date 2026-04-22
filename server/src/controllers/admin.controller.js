@@ -461,3 +461,29 @@ export const adjustTrustScore = async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
+// @GET /api/admin/drivers
+// returns all drivers with their verification status
+export const getDriversWithStatus = async (req, res) => {
+  try {
+    const DriverProfile = (await import("../models/DriverProfile.js")).default;
+    const drivers = await User.find({ role: "driver" })
+      .select("-password -refreshToken")
+      .sort({ createdAt: -1 });
+
+    const profiles = await DriverProfile.find({
+      userId: { $in: drivers.map((d) => d._id) },
+    });
+
+    const profileMap = {};
+    profiles.forEach((p) => { profileMap[p.userId.toString()] = p; });
+
+    const result = drivers.map((d) => ({
+      ...d.toObject(),
+      driverProfile: profileMap[d._id.toString()] || null,
+    }));
+
+    res.status(200).json({ success: true, drivers: result });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
