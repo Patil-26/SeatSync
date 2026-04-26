@@ -39,6 +39,7 @@ const userSchema = new mongoose.Schema(
     isPhoneVerified: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
     trustScore: { type: Number, default: 50, min: 0, max: 100 },
+    isPro: { type: Boolean, default: false },
     totalRatings: { type: Number, default: 0 },
     averageRating: { type: Number, default: 0, min: 0, max: 5 },
     totalRidesAsPassenger: { type: Number, default: 0 },
