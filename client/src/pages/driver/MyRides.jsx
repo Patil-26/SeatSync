@@ -111,10 +111,39 @@ const MyRides = () => {
     }
   };
 
+  const handleAccept = async (bookingId, rideId) => {
+    try {
+      await api.put(`/bookings/${bookingId}/accept`);
+      setBookings((prev) => ({
+        ...prev,
+        [rideId]: prev[rideId].map((b) =>
+          b._id === bookingId ? { ...b, status: "accepted" } : b
+        ),
+      }));
+      addToast("Booking accepted!", "success");
+    } catch (err) {
+      addToast(err.response?.data?.message || "Failed to accept", "error");
+    }
+  };
+
+  const handleReject = async (bookingId, rideId) => {
+    try {
+      await api.put(`/bookings/${bookingId}/reject`);
+      setBookings((prev) => ({
+        ...prev,
+        [rideId]: prev[rideId].map((b) =>
+          b._id === bookingId ? { ...b, status: "rejected" } : b
+        ),
+      }));
+      addToast("Booking rejected", "info");
+    } catch (err) {
+      addToast(err.response?.data?.message || "Failed to reject", "error");
+    }
+  };
+
   const submitRating = async (bookingId, rating, review) => {
     try {
       await api.put(`/bookings/${bookingId}/rate-passenger`, { rating, review });
-      // update local bookings state
       setBookings((prev) => {
         const updated = { ...prev };
         for (const rideId in updated) {
@@ -178,7 +207,7 @@ const MyRides = () => {
                     {ride.status === "scheduled" && (
                       <button onClick={() => cancelRide(ride._id)} className="btn-danger">Cancel</button>
                     )}
-                    {(ride.status === "completed" || ride.status === "ongoing") && (
+                    {(ride.status === "scheduled" || ride.status === "ongoing" || ride.status === "completed") && (
                       <button
                         onClick={() => togglePassengers(ride._id)}
                         className="btn-secondary text-sm"
@@ -194,12 +223,13 @@ const MyRides = () => {
                   <div className="mt-4 pt-4" style={{ borderTop: "2px solid #1a1a1a" }}>
                     {loadingBookings === ride._id ? (
                       <p className="text-sm text-gray-500">Loading...</p>
-                    ) : bookings[ride._id]?.length === 0 ? (
+                    ) : !bookings[ride._id] || bookings[ride._id].length === 0 ? (
                       <p className="text-sm text-gray-500">No bookings for this ride.</p>
                     ) : (
                       <div className="space-y-3">
-                        {bookings[ride._id]?.map((b) => (
-                          <div key={b._id} className="flex items-center justify-between">
+                        {bookings[ride._id].map((b) => (
+                          <div key={b._id} className="flex items-center justify-between py-2"
+                            style={{ borderBottom: "1px solid #f0f0f0" }}>
                             <div className="flex items-center gap-2">
                               <div className="w-7 h-7 flex items-center justify-center text-xs font-black"
                                 style={{ background: "#ffe156", border: "2px solid #1a1a1a", boxShadow: "2px 2px 0 #1a1a1a" }}>
@@ -207,22 +237,43 @@ const MyRides = () => {
                               </div>
                               <div>
                                 <p className="text-sm font-bold">{b.passenger?.name}</p>
-                                <p className="text-xs text-gray-500">{b.seatsBooked} seat(s) · {b.status}</p>
+                                <p className="text-xs text-gray-500">
+                                  {b.seatsBooked} seat(s) · ₹{b.totalPrice} · {b.paymentMethod} · ★ {b.passenger?.averageRating > 0 ? b.passenger.averageRating : "New"}
+                                </p>
                               </div>
                             </div>
-                            {ride.status === "completed" && b.status === "completed" && !b.driverRating?.rating && (
-                              <button
-                                onClick={() => setRatingBooking(b)}
-                                className="btn-primary text-sm"
-                              >
-                                ★ Rate
-                              </button>
-                            )}
-                            {b.driverRating?.rating && (
-                              <span className="text-sm font-bold" style={{ color: "#ffe156" }}>
-                                {"★".repeat(b.driverRating.rating)}
-                              </span>
-                            )}
+                            <div className="flex items-center gap-2">
+                              {b.status === "pending" && (
+                                <>
+                                  <button
+                                    onClick={() => handleAccept(b._id, ride._id)}
+                                    className="btn-primary text-xs"
+                                    style={{ padding: "4px 10px" }}>
+                                    Accept
+                                  </button>
+                                  <button
+                                    onClick={() => handleReject(b._id, ride._id)}
+                                    className="btn-danger text-xs"
+                                    style={{ padding: "4px 10px" }}>
+                                    Reject
+                                  </button>
+                                </>
+                              )}
+                              {b.status === "accepted" && (
+                                <span className="badge badge-green text-xs">Accepted</span>
+                              )}
+                              {(b.status === "rejected" || b.status === "cancelled") && (
+                                <span className="badge badge-red text-xs">{b.status}</span>
+                              )}
+                              {ride.status === "completed" && b.status === "completed" && !b.driverRating?.rating && (
+                                <button onClick={() => setRatingBooking(b)} className="btn-primary text-sm">★ Rate</button>
+                              )}
+                              {b.driverRating?.rating && (
+                                <span className="text-sm font-bold" style={{ color: "#ffe156" }}>
+                                  {"★".repeat(b.driverRating.rating)}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         ))}
                       </div>
