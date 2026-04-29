@@ -125,7 +125,7 @@ const SearchRides = () => {
           <div className="mb-6 animate-fade-up">
             <div className="flex items-center gap-2 mb-3">
               <p className="text-sm font-black uppercase tracking-wider">
-                {suggestionReason === "history" ? "🎯 Based on your travel history" : "🔥 Popular rides"}
+                {suggestionReason === "history" ? "🎯 Based on your travel history" : " Popular rides"}
               </p>
             </div>
             {suggestionsLoading ? (
